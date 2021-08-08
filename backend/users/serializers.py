@@ -22,3 +22,14 @@ class UserSerializerCustom(UserSerializer):
         if request is None or request.user.is_anonymous:
             return False
         return Follow.objects.filter(user=request.user, author=obj).exists()
+
+
+class UserCreateSerializerCustom(UserCreateSerializer):
+    class Meta(UserCreateSerializer.Meta):
+        fields = (
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'password',
+        )
