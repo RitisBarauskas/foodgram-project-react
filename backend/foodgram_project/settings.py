@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 import os
 from pathlib import Path
+import environ
+env = environ.Env()
+environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -82,22 +85,7 @@ AUTH_USER_MODEL = 'users.User'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': os.environ.get('POSTGRES_NAME'),
-    #     'NAME': os.environ.get('POSTGRES_NAME'),
-    #     'USER': os.environ.get('POSTGRES_USER'),
-    #     'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-    #     'HOST': os.environ.get('DB_HOST'),
-    #     'PORT': os.environ.get('DB_PORT'),
-    # }
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'foodgram',
-        'USER': 'foodgram_dev',
-        'PASSWORD': 'foodgram_dev',
-        'HOST': 'localhost',
-        'PORT': 5432,
-    }
+    'default': env.db(),
 }
 
 # Password validation
