@@ -7,6 +7,11 @@ User = get_user_model()
 
 
 class UserSerializer(ModelSerializer):
+
+    """
+    Сериализатор модели пользователя
+    """
+
     is_subscribed = SerializerMethodField('user_is_subscribed')
 
     class Meta:
@@ -28,6 +33,11 @@ class UserSerializer(ModelSerializer):
 
 
 class CustomUserCreateSerializer(UserCreateSerializer):
+
+    """
+    Добавление юзера с использованием сериализатора из библиотеки djoser
+    """
+
     class Meta(UserCreateSerializer.Meta):
         model = User
         fields = (
