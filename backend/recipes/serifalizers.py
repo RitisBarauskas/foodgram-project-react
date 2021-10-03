@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 
-from .models import Tag, Ingredient
+from .models import Tag, Ingredient, IngredientInRecipe, Favorite
 
 
 class IngredientSerializer(ModelSerializer):
@@ -13,6 +13,12 @@ class IngredientSerializer(ModelSerializer):
         fields = '__all__'
 
 
+class IngredientInRecipeSerializer(ModelSerializer):
+    class Meta:
+        model = IngredientInRecipe
+        fields = '__all__'
+
+
 class TagSerializer(ModelSerializer):
     """
     Сериализатор тегов
@@ -22,5 +28,10 @@ class TagSerializer(ModelSerializer):
         model = Tag
         fields = '__all__'
 
+
+class FavoriteSerializer(ModelSerializer):
+    class Meta:
+        fields = ('user', 'recipe')
+        model = Favorite
 
 

@@ -1,4 +1,5 @@
 from django.db.models import Model, DateTimeField, UniqueConstraint, PositiveIntegerField, CharField, SlugField, ForeignKey, ManyToManyField, ImageField, TextField, PositiveSmallIntegerField, CASCADE
+from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
 
 
@@ -121,6 +122,7 @@ class Recipe(Model):
     cooking_time = PositiveSmallIntegerField(
         blank=False,
         null=False,
+        validators=[MinValueValidator(1)],
         verbose_name='Время приготовления (мин)'
     )
 
@@ -156,14 +158,15 @@ class IngredientInRecipe(Model):
     )
     amount = PositiveIntegerField(
         verbose_name='Количество',
+        validators=[MinValueValidator(1)],
     )
 
     def __str__(self):
         return f'{self.recipe}: {self.ingredient} в объеме: {self.amount}'
 
     class Meta:
-        verbose_name = 'Ингредиент-в-рецепте'
-        verbose_name_plural = 'Ингредиенты-в-рецептах'
+        verbose_name = 'Ингредиент в рецепте'
+        verbose_name_plural = 'Ингредиенты в рецептах'
         unique_together = ('ingredient', 'recipe')
         ordering = ('recipe__name',)
 
