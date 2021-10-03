@@ -102,8 +102,6 @@ class Recipe(Model):
     tags = ManyToManyField(
         Tag,
         related_name='recipes',
-        blank=True,
-        null=True,
         verbose_name='Теги рецепта'
     )
 

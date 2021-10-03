@@ -1,14 +1,19 @@
 from django.contrib.admin import ModelAdmin, register
 
-from .models import User
+from .models import User, Follow
 
 
 @register(User)
 class UserAdmin(ModelAdmin):
+
+    """
+    Модель отображения пользователей в админке
+    """
+
     list_display = (
         'email',
         'first_name',
-        'last_name',
+        'second_name',
     )
     list_filter = (
         'email',
@@ -18,4 +23,15 @@ class UserAdmin(ModelAdmin):
         'email',
         'username',
     )
+    empty_value_display = '-пусто-'
+
+
+@register(Follow)
+class FollowAdmin(ModelAdmin):
+
+    """
+    Модель отображения подписчиков в админке
+    """
+
+    list_display = ('user', 'author')
     empty_value_display = '-пусто-'

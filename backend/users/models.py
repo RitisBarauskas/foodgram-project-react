@@ -45,6 +45,11 @@ class User(AbstractUser):
 
 
 class Follow(models.Model):
+
+    """
+    Модель подписок поользователей на других пользователей
+    """
+
     user = models.ForeignKey(
         User,
         null=False,
