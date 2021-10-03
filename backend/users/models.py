@@ -41,7 +41,7 @@ class User(AbstractUser):
         ordering = ('username',)
 
     def __str__(self):
-        return self.email
+        return self.get_full_name()
 
 
 class Follow(models.Model):
@@ -74,3 +74,4 @@ class Follow(models.Model):
 
     def __str__(self):
         return f'{self.user} подписан на {self.author}'
+
