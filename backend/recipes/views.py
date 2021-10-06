@@ -8,7 +8,7 @@ from rest_framework.status import (HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST,
 from rest_framework.views import APIView
 
 from .models import Cart, Favorite, Ingredient, IngredientInRecipe, Recipe, Tag
-from .serifalizers import IngredientSerializer, RecipeSerializer, TagSerializer
+from .serializers import IngredientSerializer, RecipeSerializer, TagSerializer
 
 
 class TagViewSet(viewsets.ModelViewSet):

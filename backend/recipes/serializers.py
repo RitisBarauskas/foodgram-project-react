@@ -15,7 +15,7 @@ class IngredientSerializer(ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = '__all__'
+        fields = ('__all__',)
 
 
 class IngredientInRecipeSerializer(ModelSerializer):
@@ -31,7 +31,11 @@ class TagSerializer(ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = ('__all__',)
+        fields = (
+            'name',
+            'color_hex',
+            'slug'
+        )
 
 
 class FavoriteSerializer(ModelSerializer):
