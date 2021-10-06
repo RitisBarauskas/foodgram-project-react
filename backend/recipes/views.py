@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
 from django.shortcuts import get_object_or_404
-from .models import Tag, Ingredient, Recipe, Favorite
+from .models import Tag, Ingredient, Recipe, Favorite, Cart
 from .serifalizers import TagSerializer, IngredientSerializer, RecipeSerializer
 
 
@@ -64,6 +64,46 @@ class FavoriteViewSet(APIView):
                 user=request.user,
                 recipe=recipe
             ).delete()
+        if result:
+            return Response(status=HTTP_204_NO_CONTENT)
+
+        return Response(status=HTTP_404_NOT_FOUND)
+
+
+class CartViewSet(APIView):
+    """
+    Вьюсет добавления в корзину продуктов.
+    переопределен метод GET, который проверяет наличие рецепта в корзине и в случае его отсутствия там - добавляет
+    Переопределен метод Delete.
+    """
+    def get(self, request, pk=None):
+        recipe = get_object_or_404(Recipe, id=pk)
+        serializer = RecipeSerializer(
+            recipe,
+            context={'request': request},
+        )
+
+        is_in_cart = Cart.objects.get(
+            user=request.user,
+            recipe=recipe
+        ).exist()
+        if is_in_cart:
+            return Response(status=HTTP_400_BAD_REQUEST)
+
+        Cart.objects.create(
+            user=request.user,
+            recipe=recipe
+        )
+        return Response(serializer.data)
+
+    def delete(self, request, pk=None):
+        recipe = get_object_or_404(Recipe, id=pk)
+
+        result = Cart.objects.filter(
+                user=request.user,
+                recipe=recipe
+            ).delete()
+
         if result:
             return Response(status=HTTP_204_NO_CONTENT)
 
