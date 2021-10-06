@@ -7,11 +7,12 @@ from .views import TagViewSet, RecipeViewSet, IngredientViewSet, FavoriteViewSet
 router = DefaultRouter()
 
 router.register('ingredients', IngredientViewSet, basename='ingredients')
-router.register('tags', TagViewSet, basename='tags')
+# router.register('tags', TagViewSet, basename='tags')
 router.register('', RecipeViewSet, basename='recipes')
 
 urlpatterns = [
-    path('<str:pk>/shopping_cart/', CartViewSet.as_view(), name='shopping_cart'),
-    path('<str:pk>/favorite/', FavoriteViewSet.as_view(), name='favorite'),
-    path('', include(router.urls)),
+    path('tags/', TagViewSet, name='tags'),
+    path('recipes/<str:pk>/shopping_cart/', CartViewSet.as_view(), name='shopping_cart'),
+    path('recipes/<str:pk>/favorite/', FavoriteViewSet.as_view(), name='favorite'),
+    path('recipes/', include(router.urls)),
 ]
