@@ -242,27 +242,3 @@ class Cart(Model):
                 name='unique_cart'
             )
         ]
-
-    @classmethod
-    def get_cart(cls, cart_queryset):
-        cart = {}
-        for cart in cart_queryset:
-            ingredients = IngredientInRecipe.objects.filter(
-                recipe=cart.recipe
-            ).prefetch_related('ingredient')
-
-            for ingredient in ingredients:
-                name = ingredient.ingredient.name
-                measurement_unit = ingredient.ingredient.measurement_unit
-                amount = ingredient.amount
-                if name in cart.keys():
-                    cart[name]['amount'] += amount
-                else:
-                    cart[name] = {
-                        'measurement_unit': measurement_unit,
-                        'amount': amount
-                    }
-        return cart
-
-    def __str__(self):
-        return f'В корзине {self.user} находится {self.recipe}'
