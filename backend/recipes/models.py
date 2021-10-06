@@ -1,7 +1,9 @@
-from django.db.models import Model, DateTimeField, UniqueConstraint, PositiveIntegerField, CharField, SlugField, ForeignKey, ManyToManyField, ImageField, TextField, PositiveSmallIntegerField, CASCADE
-from django.core.validators import MinValueValidator
 from django.contrib.auth import get_user_model
-
+from django.core.validators import MinValueValidator
+from django.db.models import (CASCADE, CharField, DateTimeField, ForeignKey,
+                              ImageField, ManyToManyField, Model,
+                              PositiveIntegerField, PositiveSmallIntegerField,
+                              SlugField, TextField, UniqueConstraint)
 
 User = get_user_model()
 
