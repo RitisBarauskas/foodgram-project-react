@@ -1,10 +1,14 @@
-from rest_framework import viewsets
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST, HTTP_204_NO_CONTENT
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from .models import Tag, Ingredient, Recipe, Favorite, Cart
-from .serifalizers import TagSerializer, IngredientSerializer, RecipeSerializer
+from rest_framework import viewsets
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.status import (HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST,
+                                   HTTP_404_NOT_FOUND)
+from rest_framework.views import APIView
+
+from .models import Cart, Favorite, Ingredient, IngredientInRecipe, Recipe, Tag
+from .serifalizers import IngredientSerializer, RecipeSerializer, TagSerializer
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -49,6 +53,7 @@ class FavoriteViewSet(APIView):
         )
 
         is_favorite = Favorite.objects.get(user=request.user, recipe=recipe).exist()
+
         if is_favorite:
             return Response(status=HTTP_400_BAD_REQUEST)
 
@@ -87,6 +92,7 @@ class CartViewSet(APIView):
             user=request.user,
             recipe=recipe
         ).exist()
+
         if is_in_cart:
             return Response(status=HTTP_400_BAD_REQUEST)
 
@@ -94,6 +100,7 @@ class CartViewSet(APIView):
             user=request.user,
             recipe=recipe
         )
+
         return Response(serializer.data)
 
     def delete(self, request, pk=None):
@@ -108,3 +115,48 @@ class CartViewSet(APIView):
             return Response(status=HTTP_204_NO_CONTENT)
 
         return Response(status=HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET', ])
+def download_shopping_cart(request):
+    """
+    Метод загрузки файлов.
+    Находим юзера, получаем спиок покупок, связанный с ним.
+    Увеличиваем пропорционально на число порций.
+    Отдаем файл.
+    :param request:
+    :return:
+    """
+    user = request.user
+    carts = user.is_in_cart.all()
+    for cart in carts:
+        ingredients = IngredientInRecipe.objects.filter(
+            recipe=cart.recipe
+        ).prefetch_related('ingredient')
+
+        for ingredient in ingredients:
+            name = ingredient.ingredient.name
+            measurement_unit = ingredient.ingredient.measurement_unit
+            amount = ingredient.amount
+            if name in cart.keys():
+                cart[name]['amount'] += amount
+            else:
+                cart[name] = {
+                    'measurement_unit': measurement_unit,
+                    'amount': amount
+                }
+
+    download_file = ''
+
+    for item in carts:
+        download_file += f'{item}: {carts[item]["amount"]} --- {carts[item]["measurement_unit"]}\n'
+
+    response = HttpResponse(
+        download_file,
+        'Content-Type: text/plain'
+    )
+    response['Content-Disposition'] = (
+        'attachment; filename=shopping_cart.txt'
+    )
+
+    return response
