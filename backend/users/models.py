@@ -4,7 +4,8 @@ from django.db import models
 
 class User(AbstractUser):
     """
-    Создаем абстрактную модель пользователя, переопределив email (уникальный) и username (короче)
+    Создаем абстрактную модель пользователя,
+    переопределив email (уникальный) и username (короче)
     """
     email = models.EmailField(
         unique=True,
@@ -79,4 +80,3 @@ class Follow(models.Model):
 
     def __str__(self):
         return f'{self.user} подписан на {self.author}'
-

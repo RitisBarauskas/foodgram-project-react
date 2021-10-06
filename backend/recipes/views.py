@@ -42,7 +42,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 class FavoriteViewSet(APIView):
     """
     Вьюсет избранных рецептов.
-    переопределен метод GET, который проверяет наличие рецепта в избранном и в случае его отсутствия там - добавляет
+    переопределен метод GET, который проверяет наличие рецепта в избранном
+    и в случае его отсутствия там - добавляет
     Переопределен метод Delete.
     """
     def get(self, request, pk=None):
@@ -52,7 +53,10 @@ class FavoriteViewSet(APIView):
             context={'request': request},
         )
 
-        is_favorite = Favorite.objects.get(user=request.user, recipe=recipe).exist()
+        is_favorite = Favorite.objects.get(
+            user=request.user,
+            recipe=recipe
+        ).exist()
 
         if is_favorite:
             return Response(status=HTTP_400_BAD_REQUEST)
@@ -78,7 +82,8 @@ class FavoriteViewSet(APIView):
 class CartViewSet(APIView):
     """
     Вьюсет добавления в корзину продуктов.
-    переопределен метод GET, который проверяет наличие рецепта в корзине и в случае его отсутствия там - добавляет
+    переопределен метод GET, который проверяет наличие рецепта в корзине
+    и в случае его отсутствия там - добавляет
     Переопределен метод Delete.
     """
     def get(self, request, pk=None):
