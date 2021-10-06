@@ -21,7 +21,7 @@ class IngredientSerializer(ModelSerializer):
 class IngredientInRecipeSerializer(ModelSerializer):
     class Meta:
         model = IngredientInRecipe
-        fields = '__all__'
+        fields = ('__all__',)
 
 
 class TagSerializer(ModelSerializer):
@@ -31,7 +31,7 @@ class TagSerializer(ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = '__all__'
+        fields = ('__all__',)
 
 
 class FavoriteSerializer(ModelSerializer):
@@ -58,7 +58,7 @@ class RecipeSerializer(ModelSerializer):
         queryset=Tag.objects.all()
     )
     image = Base64ImageField()
-    is_favorite = SerializerMethodField('check_is_favorites')
+    is_favorite = SerializerMethodField('check_is_favorite')
     is_in_cart = SerializerMethodField('check_is_in_cart')
 
     @staticmethod
@@ -115,3 +115,17 @@ class RecipeSerializer(ModelSerializer):
         ).exists()
 
         return is_in_cart
+
+    class Meta:
+        model = Recipe
+        fields = ('name',
+                  'is_favorite',
+                  'author',
+                  'ingredients',
+                  'tags',
+                  'text',
+                  'pub_date',
+                  'cooking_time',
+                  'is_in_cart',
+                  'image'
+        )
