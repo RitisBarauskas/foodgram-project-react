@@ -180,7 +180,6 @@ class Favorite(Model):
     user = ForeignKey(
         User,
         on_delete=CASCADE,
-        related_name='favorites',
         verbose_name='Пользователь'
     )
 
@@ -220,13 +219,12 @@ class Cart(Model):
     user = ForeignKey(
         User,
         on_delete=CASCADE,
-        related_name='cart',
         verbose_name='Пользователь'
     )
     recipe = ForeignKey(
         Recipe,
         on_delete=CASCADE,
-        related_name='shopping_list',
+        related_name='cart',
         verbose_name='Рецепт для покупки'
     )
     pub_date = DateTimeField(
