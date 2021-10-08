@@ -4,7 +4,6 @@ from rest_framework.serializers import (ModelSerializer,
                                         SerializerMethodField)
 
 from users.serializers import UserSerializerCustom
-
 from .models import Cart, Favorite, Ingredient, IngredientInRecipe, Recipe, Tag
 
 
@@ -15,13 +14,13 @@ class IngredientSerializer(ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = ('__all__',)
+        fields = '__all__'
 
 
 class IngredientInRecipeSerializer(ModelSerializer):
     class Meta:
         model = IngredientInRecipe
-        fields = ('__all__',)
+        fields = '__all__'
 
 
 class TagSerializer(ModelSerializer):
