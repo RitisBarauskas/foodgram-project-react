@@ -1,6 +1,6 @@
 from django.contrib.admin import ModelAdmin, register
 
-from .models import Ingredient, Recipe, Tag
+from .models import Ingredient, Tag
 
 
 @register(Tag)
@@ -23,15 +23,3 @@ class IngredientAdmin(ModelAdmin):
     list_filter = ('name',)
     ordering = ('name',)
 
-
-@register(Recipe)
-class RecipeAdmin(ModelAdmin):
-
-    """
-    Регистрация в админке модели рецептов
-    """
-
-    list_display = ('name', 'author', 'cooking_time', 'pub_date')
-    list_filter = ('name', 'author', 'cooking_time', 'pub_date')
-    ordering = ('-pub_date',)
-    empty_value_display = '-пусто-'
