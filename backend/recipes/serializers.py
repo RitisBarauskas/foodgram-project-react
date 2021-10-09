@@ -2,15 +2,12 @@ import base64
 
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
-from django.db.models import Sum, F
-from django.http import HttpResponse
 from rest_framework import serializers
 from django.db import transaction
-from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 
 from users.serializers import UserSerializerCustom
-from .models import ShoppingCart, Favorite, Ingredient, IngredientInRecipe, Recipe, Tag
+from .models import Favorite, Ingredient, IngredientInRecipe, Recipe, Tag
 from .constants import DEFAULT_RECIPES_LIMIT
 
 User = get_user_model()
@@ -172,6 +169,8 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         )
 
         return recipe
+
+
 
     @transaction.atomic
     def update(self, instance, validated_data):
