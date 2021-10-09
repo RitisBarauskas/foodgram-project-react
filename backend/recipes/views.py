@@ -27,7 +27,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
     http_method_names = ['get']
 
     def get_queryset(self):
-        queryset = Ingredient.objets
+        queryset = Ingredient.objects
         name = self.request.query_params.get('name')
         if name:
             queryset = queryset.filter(name__istartswith=name)

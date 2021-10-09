@@ -46,7 +46,7 @@ class CreateAndDeleteRelatedMixin:
                 status=status.HTTP_201_CREATED,
             )
         else:
-            klass_obj = klass.objets.filter(
+            klass_obj = klass.objeсts.filter(
                 **kwargs
             ).first()
 
