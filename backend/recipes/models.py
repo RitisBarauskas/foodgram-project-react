@@ -79,7 +79,7 @@ class RecipeQuerySet(models.QuerySet):
                 )
             ),
             is_in_shopping_cart=Exists(
-                Cart.objects.filter(
+                ShoppingCart.objects.filter(
                     user_id=user_id, recipe__pk=OuterRef('pk')
                 )
             ),
@@ -227,7 +227,7 @@ class Favorite(models.Model):
         return f'Рецепт {self.recipe} нравится {self.user}'
 
 
-class Cart(models.Model):
+class ShoppingCart(models.Model):
 
     """
     Список необходимых покупок
@@ -236,13 +236,13 @@ class Cart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='cart',
+        related_name='shopping_cart',
         verbose_name='Пользователь',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='cart',
+        related_name='shopping_cart',
         verbose_name='Рецепт для покупки',
     )
     pub_date = models.DateTimeField(
@@ -257,9 +257,6 @@ class Cart(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
-                name='unique_cart'
+                name='unique_shopping_cart'
             )
         ]
-
-
-

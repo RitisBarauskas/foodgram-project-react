@@ -10,7 +10,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 
 from users.serializers import UserSerializerCustom
-from .models import Cart, Favorite, Ingredient, IngredientInRecipe, Recipe, Tag
+from .models import ShoppingCart, Favorite, Ingredient, IngredientInRecipe, Recipe, Tag
 from .constants import DEFAULT_RECIPES_LIMIT
 
 User = get_user_model()
@@ -263,90 +263,3 @@ class AddRecipeSerializer(serializers.ModelSerializer):
         if data <= 0:
             raise ValidationError('Время готовки должно равняться минуте или быть больше')
         return data
-
-# class RecipeSerializer(serializers.ModelSerializer):
-#     """
-#     Сериализатор рецептов
-#     """
-#     author = UserSerializerCustom(read_only=True)
-#     ingredients = IngredientInRecipeSerializer(
-#         required=True,
-#         many=True
-#     )
-#     tags = PrimaryKeyRelatedField(
-#         many=True,
-#         read_only=False,
-#         queryset=Tag.objects.all()
-#     )
-#     image = Base64ImageField()
-#     is_favorite = serializers.SerializerMethodField('check_is_favorite')
-#     is_in_cart = serializers.SerializerMethodField('check_is_in_cart')
-#
-#     @staticmethod
-#     def create_recipe_ingredients(recipe, ingredients):
-#
-#         for ingredient in ingredients:
-#             IngredientInRecipe.objects.create(
-#                 recipe=recipe,
-#                 ingredient=ingredient['ingredient']['id'],
-#                 amount=ingredient['amount']
-#             )
-#
-#     def create(self, data):
-#
-#         ingredients = data.pop('ingredients')
-#         tags = data.pop('tags')
-#         recipe = Recipe.objects.create(**data)
-#         recipe.tags.set(tags)
-#         self.create_recipe_ingredients(recipe, ingredients)
-#
-#         return recipe
-#
-#     def update(self, instance, data):
-#
-#         ingredients = data.pop('ingredients')
-#         tags = data.pop('tags')
-#         IngredientInRecipe.objects.filter(recipe=instance).delete()
-#         self.create_recipe_ingredients(instance, ingredients)
-#         instance.tags.set(tags)
-#
-#         return super().update(instance, data)
-#
-#     def check_is_favorite(self, obj):
-#
-#         current_user = self.context['request'].user
-#         if current_user.is_anonymous:
-#             return False
-#
-#         is_favorite = Favorite.objects.filter(
-#             recipe=obj,
-#             user=current_user
-#         ).exists()
-#
-#         return is_favorite
-#
-#     def check_is_in_cart(self, obj):
-#         current_user = self.context['request'].user
-#         if current_user.is_anonymous:
-#             return False
-#
-#         is_in_cart = Cart.objects.filter(
-#             recipe=obj,
-#             user=current_user
-#         ).exists()
-#
-#         return is_in_cart
-#
-#     class Meta:
-#         model = Recipe
-#         fields = ('name',
-#                   'is_favorite',
-#                   'author',
-#                   'ingredients',
-#                   'tags',
-#                   'text',
-#                   'pub_date',
-#                   'cooking_time',
-#                   'is_in_cart',
-#                   'image'
-#         )
