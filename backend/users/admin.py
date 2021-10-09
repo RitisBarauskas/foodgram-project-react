@@ -13,7 +13,7 @@ class UserAdmin(ModelAdmin):
     list_display = (
         'email',
         'first_name',
-        'second_name',
+        'last_name',
     )
     list_filter = (
         'email',

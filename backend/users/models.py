@@ -26,7 +26,7 @@ class User(AbstractUser):
         null=False,
         verbose_name="Имя пользователя"
     )
-    second_name = models.CharField(
+    last_name = models.CharField(
         max_length=50,
         blank=False,
         null=False,
@@ -34,7 +34,7 @@ class User(AbstractUser):
     )
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'second_name']
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
         verbose_name = 'Пользователь'

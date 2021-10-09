@@ -1,29 +1,33 @@
 version: '3.3'
+
+volumes:
+  postgres_data:
+  media_value:
+
 services:
 
   db:
     image: postgres:14.0
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+    container_name: db
     env_file:
       - ../backend/foodgram_project/.env
-    ports:
-      - 5432:5432
+    expose:
+      - "5432"
 
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    build: ../backend/foodgram_project/.
+    volumes:
+      - /static:/code/static
+      - /media:/code/media/
     restart: always
     depends_on:
       - db
-    volumes:
-      - static_value:/code/dj_static/
-      - media_value:/code/dj_media/
     env_file:
       - ../backend/foodgram_project/.env
-    ports:
-      - 8000:8000
+    links:
+      - db:db
 
   frontend:
     build:
@@ -31,24 +35,22 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ../frontend/:/app/result_build/
-    depends_on:
-      - backend
 
   nginx:
     image: nginx:1.19.3
     ports:
       - 80:80
     volumes:
-      - static_value:/var/html/dj_static/
-      - media_value:/var/html/dj_media/
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/redoc.html:/usr/share/nginx/html/api/docs/redoc.html
       - ../docs/openapi-schema.yml:/usr/share/nginx/html/api/docs/openapi-schema.yml
+      - /static:/static
+      - /media:/media/
     depends_on:
+      - backend
       - frontend
 
-volumes:
-  postgres_data:
-  static_value:
-  media_value:
+networks:
+  backend_network:
+    driver: bridge

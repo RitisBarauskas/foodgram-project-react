@@ -16,7 +16,7 @@ class UserSerializerCustom(UserSerializer):
             'id',
             'username',
             'first_name',
-            'second_name',
+            'last_name',
             'is_subscribed',
         )
 
@@ -33,6 +33,6 @@ class UserCreateSerializerCustom(UserCreateSerializer):
             'email',
             'username',
             'first_name',
-            'second_name',
+            'last_name',
             'password',
         )
