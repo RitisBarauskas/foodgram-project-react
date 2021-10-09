@@ -24,6 +24,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
     """
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    pagination_class = None
     http_method_names = ['get']
 
     def get_queryset(self):
