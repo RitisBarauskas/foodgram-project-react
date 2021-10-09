@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import Q, F
 
 
 class User(AbstractUser):
@@ -9,27 +10,19 @@ class User(AbstractUser):
     """
     email = models.EmailField(
         unique=True,
-        blank=False,
-        null=False,
         verbose_name='Email пользователя'
     )
     username = models.CharField(
         unique=True,
-        blank=False,
-        null=False,
         max_length=30,
         verbose_name='Юзернейм пользователя'
     )
     first_name = models.CharField(
         max_length=50,
-        blank=False,
-        null=False,
         verbose_name="Имя пользователя"
     )
     last_name = models.CharField(
         max_length=50,
-        blank=False,
-        null=False,
         verbose_name="Фамилия пользователя"
     )
 
@@ -46,25 +39,19 @@ class User(AbstractUser):
 
 
 class Follow(models.Model):
-
     """
-    Модель подписок поользователей на других пользователей
+    Модель подписок пользователей на других пользователей
     """
-
     user = models.ForeignKey(
         User,
-        null=False,
-        blank=False,
         on_delete=models.CASCADE,
-        related_name='follower',
+        related_name='subscribed_to',
         verbose_name='Подписчик'
     )
     author = models.ForeignKey(
         User,
-        blank=False,
-        null=False,
         on_delete=models.CASCADE,
-        related_name='following',
+        related_name='subscribed_by',
         verbose_name='Автор'
     )
 
@@ -74,9 +61,14 @@ class Follow(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'],
-                name='uniq_follow'
+                name='uniq_follow',
+            ),
+            models.CheckConstraint(
+                check=~Q(user=F('author')),
+                name='follower_and_following_can_not_be_equal',
             )
         ]
+        ordering = ('author_id',)
 
     def __str__(self):
         return f'{self.user} подписан на {self.author}'

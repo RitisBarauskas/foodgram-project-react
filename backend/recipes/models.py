@@ -1,7 +1,10 @@
+from typing import List, Optional
+
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
-
+from django.db.models import OuterRef, Exists
+from django.utils.text import slugify
 
 User = get_user_model()
 
@@ -62,6 +65,27 @@ class Tag(models.Model):
         return self.name
 
 
+class RecipeQuerySet(models.QuerySet):
+    def filter_by_tags(self, tags: List[str]):
+        if tags:
+            return self.filter(tags__slug__in=tags).distinct()
+        return self
+
+    def add_user_annotation(self, user_id: Optional[int]):
+        return self.annotate(
+            is_favorited=Exists(
+                Favorite.objects.filter(
+                    user_id=user_id, recipe__pk=OuterRef('pk')
+                )
+            ),
+            is_in_shopping_cart=Exists(
+                Cart.objects.filter(
+                    user_id=user_id, recipe__pk=OuterRef('pk')
+                )
+            ),
+        )
+
+
 class Recipe(models.Model):
 
     """
@@ -69,7 +93,7 @@ class Recipe(models.Model):
     """
 
     name = models.CharField(
-        max_length=150,
+        max_length=200,
         verbose_name='Название рецепта',
     )
 
@@ -77,42 +101,49 @@ class Recipe(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='recipes',
-        verbose_name='Автор рецепта'
+        verbose_name='Автор рецепта',
     )
 
     ingredients = models.ManyToManyField(
         Ingredient,
         through='IngredientInRecipe',
         through_fields=('recipe', 'ingredient'),
-        verbose_name='Ингредиенты рецепта'
+        verbose_name='Ингредиенты рецепта',
     )
 
     tags = models.ManyToManyField(
         Tag,
         related_name='recipes',
-        verbose_name='Теги рецепта'
+        verbose_name='Теги рецепта',
     )
 
     image = models.ImageField(
-        upload_to='media/',
-        verbose_name='Иллюстрация рецепта'
+        upload_to='recipes/images',
+        verbose_name='Иллюстрация рецепта',
     )
 
     text = models.TextField(
         verbose_name='Описание рецепта',
         blank=False,
-        null=False
+        null=False,
     )
 
     cooking_time = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1)],
-        verbose_name='Время приготовления (мин)'
+        verbose_name='Время приготовления (мин)',
     )
 
     pub_date = models.DateTimeField(
         auto_now_add=True,
-        verbose_name='Дата публикации'
+        verbose_name='Дата публикации',
     )
+
+    objects = RecipeQuerySet.as_manager()
+
+    def save(self, *args, **kwargs):
+        if not kwargs.pop('from_admin', False):
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Рецепт'
@@ -139,7 +170,7 @@ class IngredientInRecipe(models.Model):
         Recipe,
         on_delete=models.CASCADE,
         related_name='ingredient_amount',
-        verbose_name='Рецепт'
+        verbose_name='Рецепт',
     )
     amount = models.PositiveIntegerField(
         verbose_name='Количество',
@@ -166,14 +197,14 @@ class Favorite(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='favorites',
-        verbose_name='Пользователь'
+        verbose_name='Пользователь',
     )
 
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='favorites',
-        verbose_name='Рецепт'
+        verbose_name='Рецепт',
     )
 
     pub_date = models.DateTimeField(
@@ -206,13 +237,13 @@ class Cart(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='cart',
-        verbose_name='Пользователь'
+        verbose_name='Пользователь',
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='cart',
-        verbose_name='Рецепт для покупки'
+        verbose_name='Рецепт для покупки',
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
@@ -229,3 +260,6 @@ class Cart(models.Model):
                 name='unique_cart'
             )
         ]
+
+
+
