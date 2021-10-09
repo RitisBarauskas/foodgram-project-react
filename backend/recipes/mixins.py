@@ -1,5 +1,4 @@
-from types import Union
-from typing import Type
+from typing import Type, Union
 
 from django.db import IntegrityError
 from requests import Response

@@ -67,7 +67,7 @@ class RecipesViewSet(viewsets.ModelViewSet, CreateAndDeleteRelatedMixin):
         queryset = Recipe.objects
         if tags:
             queryset = queryset.filter_by_tags(tags)
-        queryset = queryset.add_user_annotations(user.pk)
+        queryset = queryset.add_user_annotation(user.pk)
         if self.request.query_params.get('is_favorited'):
             queryset = queryset.filter(is_favorited=True)
         if self.request.query_params.get('is_in_shopping_cart'):
