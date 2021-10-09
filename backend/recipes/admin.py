@@ -8,9 +8,9 @@ class TagAdmin(ModelAdmin):
 
     """Регистрация в админке тегов рецептов"""
 
-    list_display = ('name', 'color_hex', 'slug')
+    list_display = ('name', 'color', 'slug')
     empty_value_display = '-пусто-'
-    ordering = ('color_hex',)
+    ordering = ('color',)
 
 
 @register(Ingredient)

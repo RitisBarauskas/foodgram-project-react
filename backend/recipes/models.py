@@ -42,7 +42,7 @@ class Tag(models.Model):
         verbose_name='Имя тега'
     )
 
-    color_hex = models.CharField(
+    color = models.CharField(
         max_length=7,
         unique=True,
         verbose_name='Цвет тега'

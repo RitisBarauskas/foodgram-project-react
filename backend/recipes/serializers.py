@@ -32,7 +32,7 @@ class TagSerializer(ModelSerializer):
         model = Tag
         fields = (
             'name',
-            'color_hex',
+            'color',
             'slug'
         )
 
