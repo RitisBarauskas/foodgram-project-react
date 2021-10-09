@@ -14,7 +14,6 @@ class Ingredient(models.Model):
 
     name = models.CharField(
         max_length=150,
-        unique=True,
         verbose_name='Название ингредиента'
     )
 
