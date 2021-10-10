@@ -185,7 +185,7 @@ class Api {
     return fetch(
       `/api/recipes/${recipe_id}/`,
       {
-        method: isPut ? 'PUT' : 'PATCH',
+        method: 'PUT',
         headers: {
           ...this._headers,
           'authorization': `Token ${token}`

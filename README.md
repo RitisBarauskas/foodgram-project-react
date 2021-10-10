@@ -1,3 +1,5 @@
+![example workflow](https://github.com/RitisBarauskas/foodgram-project-react/actions/workflows/main.yaml/badge.svg)
+
 # Foodgram
 ## продуктовый помощник
 
