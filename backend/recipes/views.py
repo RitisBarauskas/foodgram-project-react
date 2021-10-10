@@ -16,7 +16,7 @@ from .serializers import (FavoriteSerializer, IngredientSerializer,
 
 
 def add_ing(request):
-    with open('data/ingredients.csv') as f:
+    with open('ingredients.csv') as f:
         reader = csv.reader(f)
         for row in reader:
             Ingredient.objects.create(

@@ -59,6 +59,7 @@ jobs:
         with:
           host: ${{ secrets.HOST_SERVER }}
           username: ${{ secrets.USER_SERVER }}
+          password: ${{ }}
           key: ${{ secrets.SSH_KEY }}
           script: |
             echo ${{ secrets.PASSWORD_DOCKER }} | sudo docker login -u ${{ secrets.USERNAME_DOCKER }} --password-stdin
@@ -66,7 +67,6 @@ jobs:
             sudo docker pull ritisbarauskas/foodgram-backend:latest
             sudo docker pull ritisbarauskas/foodgram_frontend:v1.0
             sudo docker-compose stop
-            sudo docker-compose rm web
             cd ../backend/foodgram-project
             touch .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
