@@ -1,14 +1,17 @@
 from django.db.models import F, Sum
 from django.http import HttpResponse
-from requests import Response
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from django.shortcuts import get_object_or_404
-from rest_framework import status, views
+from requests import Response
+from rest_framework import status, views, viewsets
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 
-from .models import Favorite, Ingredient, IngredientInRecipe, Recipe, Tag, ShoppingCart
-from .serializers import IngredientSerializer, TagSerializer, RecipeCreateUpdateSerializer, RecipeMinifieldSerializer, \
-    RecipeListSerializer, ShoppingCartSerializer, FavoriteSerializer
+from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
+                     ShoppingCart, Tag)
+from .serializers import (FavoriteSerializer, IngredientSerializer,
+                          RecipeCreateUpdateSerializer, RecipeListSerializer,
+                          RecipeMinifieldSerializer, ShoppingCartSerializer,
+                          TagSerializer)
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -93,7 +96,10 @@ class FavoriteView(views.APIView):
         serializer = FavoriteSerializer(data=data, context=context)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED
+        )
 
     def delete(self, request, pk):
         user = request.user
@@ -123,7 +129,10 @@ class ShoppingCartView(views.APIView):
         serializer = ShoppingCartSerializer(data=data, context=context)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED
+        )
 
     def delete(self, request, pk):
         user = request.user

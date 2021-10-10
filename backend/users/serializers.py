@@ -1,7 +1,8 @@
-from django.contrib.auth import authenticate
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
+
+from recipes.models import Recipe
 
 from .models import Follow
 
@@ -63,3 +64,63 @@ class AuthTokenSerializer(serializers.Serializer):
 
         attributes['user'] = user
         return attributes
+
+
+class RecipeCountFollowUserField(serializers.Field):
+    def get_attribute(self, instance):
+        return Recipe.objects.filter(author=instance.author)
+
+    def to_representation(self, recipe_list):
+        return recipe_list.count()
+
+
+class RecipeFollowUserField(serializers.Field):
+    def get_attribute(self, instance):
+        return Recipe.objects.filter(author=instance.author)
+
+    def to_representation(self, recipe_list):
+        recipe_data = []
+        for recipe in recipe_list:
+            recipe_data.append(
+                {
+                    "id": recipe.id,
+                    "name": recipe.name,
+                    "image": recipe.image.url,
+                    "cooking_time": recipe.cooking_time,
+                }
+            )
+        return recipe_data
+
+
+class FollowUsersSerializer(serializers.ModelSerializer):
+    email = serializers.ReadOnlyField(source='following.email')
+    id = serializers.ReadOnlyField(source='following.id')
+    username = serializers.ReadOnlyField(source='following.username')
+    first_name = serializers.ReadOnlyField(source='following.first_name')
+    last_name = serializers.ReadOnlyField(source='following.last_name')
+    is_subscribed = serializers.ReadOnlyField(default=True)
+    recipes = RecipeFollowUserField()
+    recipes_count = RecipeCountFollowUserField()
+
+    class Meta:
+        model = Follow
+        read_only_fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count',
+        )
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count',
+        )

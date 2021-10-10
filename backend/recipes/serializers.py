@@ -2,14 +2,16 @@ import base64
 
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
-from rest_framework import serializers
 from django.db import transaction
-from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
+from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from users.serializers import UserSerializerCustom
-from .models import Favorite, Ingredient, IngredientInRecipe, Recipe, Tag, ShoppingCart
+
 from .constants import DEFAULT_RECIPES_LIMIT
+from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
+                     ShoppingCart, Tag)
 
 User = get_user_model()
 
@@ -130,15 +132,6 @@ class RecipeListSerializer(serializers.ModelSerializer):
             return False
         user = request.user
         return ShoppingCart.objects.filter(recipe=obj, user=user).exists()
-
-
-class FavoriteSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор любимых рецептов
-    """
-    class Meta:
-        fields = ('user', 'recipe')
-        model = Favorite
 
 
 class Base64ImageField(serializers.ImageField):
