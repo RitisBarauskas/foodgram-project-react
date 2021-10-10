@@ -22,11 +22,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 flake8-broken-line flake8-isort
         pip install -r requirements.txt
-        pip install -r requirements.txt
     - name: Test with flake8
       run: |
         # запуск проверки проекта по flake8
-        python -m flake8  --isort-show-traceback -v
+        python -m flake8
   build_and_push_to_docker_hub:
     runs-on: ubuntu-latest
     needs: tests
