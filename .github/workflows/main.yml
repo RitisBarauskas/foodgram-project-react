@@ -62,4 +62,5 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           stack_file_name: docker-compose.yml
           script: |
+            echo ${{ secrets.PASSWORD_DOCKER }} | sudo docker login -u ${{ secrets.USERNAME_DOCKER }} --password-stdin
             toch .env
