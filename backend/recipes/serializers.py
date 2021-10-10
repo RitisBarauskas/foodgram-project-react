@@ -331,7 +331,7 @@ class ShoppingCartSerializer(FavoriteSerializer):
                 and ShoppingCart.objects.filter(
                     user=user,
                     recipe__id=recipe_id
-                ).exists()):
+        ).exists()):
             raise serializers.ValidationError(
                 'Продукты уже добавлены в корзину')
 
