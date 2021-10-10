@@ -10,8 +10,7 @@ from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
                      ShoppingCart, Tag)
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           RecipeCreateUpdateSerializer, RecipeListSerializer,
-                          RecipeMinifieldSerializer, ShoppingCartSerializer,
-                          TagSerializer)
+                          ShoppingCartSerializer, TagSerializer)
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -118,6 +117,7 @@ class ShoppingCartView(views.APIView):
     и в случае его отсутствия там - добавляет
     """
     permission_classes = [IsAuthenticated, ]
+
     def get(self, request, pk=None):
 
         user = request.user

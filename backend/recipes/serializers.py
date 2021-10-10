@@ -188,8 +188,6 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
 
         return recipe
 
-
-
     @transaction.atomic
     def update(self, instance, validated_data):
         ingredients = validated_data.pop('ingredients', None)
@@ -241,7 +239,10 @@ class AddRecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     author = UserSerializerCustom(read_only=True)
     ingredients = AddIngredientRecipeSerializer(many=True)
-    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True,
+    )
     cooking_time = serializers.IntegerField()
 
     class Meta:
@@ -274,7 +275,9 @@ class AddRecipeSerializer(serializers.ModelSerializer):
 
     def validate_cooking_time(self, data):
         if data <= 0:
-            raise ValidationError('Время готовки должно равняться минуте или быть больше')
+            raise ValidationError(
+                'Время готовки должно равняться минуте или быть больше'
+            )
         return data
 
 

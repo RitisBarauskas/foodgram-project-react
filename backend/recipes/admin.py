@@ -22,4 +22,3 @@ class IngredientAdmin(ModelAdmin):
     empty_value_display = '-пусто-'
     list_filter = ('name',)
     ordering = ('name',)
-
