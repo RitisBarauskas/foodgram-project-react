@@ -11,6 +11,14 @@ from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           RecipeCreateUpdateSerializer, RecipeListSerializer,
                           ShoppingCartSerializer, TagSerializer)
+import csv
+
+
+def add_ing(request):
+    with open('data/ingredients.csv') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            Ingredient.objects.create(name=row[0], measurement_unit=row[1])
 
 
 class TagViewSet(viewsets.ModelViewSet):

@@ -13,9 +13,7 @@ services:
       - 5432:5432
 
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: ritisbarauskas/foodgram-backend:latest
     restart: always
     depends_on:
       - db
@@ -28,9 +26,7 @@ services:
       - 8000:8000
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: ritisbarauskas/foodgram-frontend:v1.0
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
