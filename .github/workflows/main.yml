@@ -63,7 +63,7 @@ jobs:
           script: |
             cd foodgram-project-react/infra
             sudo docker pull ritisbarauskas/foodgram-backend:latest
-            sudo docker pull ritisbarauskas/foodgram_frontend:v1.0
+            sudo docker pull ritisbarauskas/foodgram_frontend:v1.1
             sudo docker-compose down
             cd ../backend/foodgram-project
             touch .env
