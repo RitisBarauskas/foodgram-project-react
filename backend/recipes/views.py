@@ -1,3 +1,5 @@
+import csv
+
 from django.db.models import F, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -11,14 +13,16 @@ from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           RecipeCreateUpdateSerializer, RecipeListSerializer,
                           ShoppingCartSerializer, TagSerializer)
-import csv
 
 
 def add_ing(request):
     with open('data/ingredients.csv') as f:
         reader = csv.reader(f)
         for row in reader:
-            Ingredient.objects.create(name=row[0], measurement_unit=row[1])
+            Ingredient.objects.create(
+                name=row[0],
+                measurement_unit=row[1]
+            )
 
 
 class TagViewSet(viewsets.ModelViewSet):
