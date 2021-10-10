@@ -61,7 +61,6 @@ jobs:
           username: ${{ secrets.USER_SERVER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            echo ${{ secrets.PASSWORD_DOCKER }} | sudo docker login -u ${{ secrets.USERNAME_DOCKER }} --password-stdin
             cd foodgram-project-react/infra
             sudo docker pull ritisbarauskas/foodgram-backend:latest
             sudo docker pull ritisbarauskas/foodgram_frontend:v1.0
