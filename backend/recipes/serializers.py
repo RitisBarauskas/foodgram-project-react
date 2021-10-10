@@ -5,11 +5,9 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 from users.serializers import UserSerializerCustom
 
-from .constants import DEFAULT_RECIPES_LIMIT
 from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
                      ShoppingCart, Tag)
 

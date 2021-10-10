@@ -10,6 +10,9 @@ User = get_user_model()
 
 
 class UserRegistrationSerializer(UserCreateSerializer):
+    """
+    Сериалзиатор регистрации пользователей (используется в сеттингс)
+    """
     class Meta(UserCreateSerializer.Meta):
         fields = (
             'email',
@@ -21,6 +24,9 @@ class UserRegistrationSerializer(UserCreateSerializer):
 
 
 class UserSerializerCustom(UserSerializer):
+    """
+    Кастомный пользовательский сериализатор
+    """
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta(UserSerializer.Meta):
@@ -41,6 +47,9 @@ class UserSerializerCustom(UserSerializer):
 
 
 class AuthTokenSerializer(serializers.Serializer):
+    """
+    Сериализатор аутентификации
+    """
     email = serializers.EmailField(label='Email')
     password = serializers.CharField(
         label=('Password',),
@@ -70,6 +79,9 @@ class AuthTokenSerializer(serializers.Serializer):
 
 
 class RecipeCountFollowUserField(serializers.Field):
+    """
+    Мини-сериализатор подсчета числа подписчиков
+    """
     def get_attribute(self, instance):
         return Recipe.objects.filter(author=instance.author)
 
@@ -78,6 +90,9 @@ class RecipeCountFollowUserField(serializers.Field):
 
 
 class RecipeFollowUserField(serializers.Field):
+    """
+    Сериалзиатор формирования рецептов для подписчиков
+    """
     def get_attribute(self, instance):
         return Recipe.objects.filter(author=instance.author)
 
@@ -96,6 +111,9 @@ class RecipeFollowUserField(serializers.Field):
 
 
 class FollowUsersSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор подписок (можно подписаться и отписаться)
+    """
     email = serializers.ReadOnlyField(source='following.email')
     id = serializers.ReadOnlyField(source='following.id')
     username = serializers.ReadOnlyField(source='following.username')
@@ -130,12 +148,18 @@ class FollowUsersSerializer(serializers.ModelSerializer):
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
+    """
+    Мини-сериализатор рецептов
+    """
     class Meta:
         model = Recipe
         fields = ['id', 'name', 'image', 'cooking_time']
 
 
 class SubscribersSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор листа подписчиков
+    """
     recipes = RecipeShortSerializer(many=True, read_only=True)
     recipes_count = serializers.SerializerMethodField()
     is_subscribed = serializers.SerializerMethodField()
