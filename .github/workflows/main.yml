@@ -62,8 +62,4 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           stack_file_name: docker-compose.yml
           script: |
-            sudo docker pull ritisbarauskas/foodgram-backend:latest
-            sudo docker pull ritisbarauskas/foodgram_frontend:v1.0
-            sudo docker-compose stop
-            sudo docker-compose rm web
-            sudo docker-compose up -d
+            toch .env
