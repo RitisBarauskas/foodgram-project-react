@@ -4,13 +4,14 @@ from djoser.views import UserViewSet
 from rest_framework import permissions, status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Follow
 from .serializers import (AuthTokenSerializer, FollowUsersSerializer,
-                          UserSerializerCustom)
+                          SubscribersSerializer, UserSerializerCustom)
 
 User = get_user_model()
 
@@ -76,13 +77,16 @@ class FollowUserViewSet(UserViewSet):
         else:
             return self.user_subscribe(serializer, id)
 
-    @action(
-        detail=False,
-        methods=['get'],
-        permission_classes=[permissions.IsAuthenticated]
+
+@api_view(['get'])
+def subscriptions(request):
+    user = User.objects.filter(subscribed_by__user=request.user)
+    paginator = PageNumberPagination()
+    paginator.page_size = 10
+    page = paginator.paginate_queryset(user, request)
+    serializer = SubscribersSerializer(
+        page,
+        many=True,
+        context={'current_user': request.user}
     )
-    def subscriptions(self, serializer):
-        follow_list = Follow.objects.filter(user=self.request.user)
-        page = self.paginate_queryset(follow_list)
-        serializer = FollowUsersSerializer(page, many=True)
-        return self.get_paginated_response(serializer.data)
+    return paginator.get_paginated_response(serializer.data)

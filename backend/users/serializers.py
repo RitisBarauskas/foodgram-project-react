@@ -124,3 +124,31 @@ class FollowUsersSerializer(serializers.ModelSerializer):
             'recipes',
             'recipes_count',
         )
+
+
+class RecipeShortSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ['id', 'name', 'image', 'cooking_time']
+
+
+class SubscribersSerializer(serializers.ModelSerializer):
+    recipes = RecipeShortSerializer(many=True, read_only=True)
+    recipes_count = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            'email', 'id', 'username', 'first_name', 'last_name',
+            'is_subscribed', 'recipes', 'recipes_count'
+        )
+
+    def get_recipes_count(self, obj):
+        return obj.recipes.count()
+
+    def get_is_subscribed(self, user):
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:
+            return False
+        return Follow.objects.filter(user=user, author=request.user).exists()
