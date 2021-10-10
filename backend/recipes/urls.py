@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import (DownloadShoppingCartView, FavoriteView, IngredientViewSet,
-                    RecipesViewSet, ShoppingCartView, TagViewSet, add_ing)
+                    RecipesViewSet, ShoppingCartView, TagViewSet)
 
 router = DefaultRouter()
 router.register('ingredients', IngredientViewSet, basename='ingredients')
@@ -10,11 +10,6 @@ router.register('recipes', RecipesViewSet, basename='recipes')
 router.register('tags', TagViewSet, basename='tags')
 
 urlpatterns = [
-    path(
-        'add_ing/',
-        add_ing,
-        name='add-ing',
-    ),
     path(
         'recipes/<str:pk>/favorite/',
         FavoriteView.as_view(),
