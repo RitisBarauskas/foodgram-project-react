@@ -57,7 +57,10 @@ class AuthTokenSerializer(serializers.Serializer):
                                 email=email, password=password)
             if not user:
                 message = 'Неверные учетные данные.'
-                raise serializers.ValidationError(message, code='authorization')
+                raise serializers.ValidationError(
+                    message,
+                    code='authorization',
+                )
         else:
             message = 'Запрос должен содержать email и пароль.'
             raise serializers.ValidationError(message, code='authorization')
