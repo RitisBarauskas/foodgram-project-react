@@ -1,11 +1,14 @@
+from django.db.models import F, Sum
 from django.http import HttpResponse
+from requests import Response
 from rest_framework import viewsets
-from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from django.shortcuts import get_object_or_404
+from rest_framework import status, views
 
-from .models import Favorite, Ingredient, IngredientInRecipe, Recipe, Tag
-from .serializers import IngredientSerializer, TagSerializer, RecipeCreateUpdateSerializer, RecipeMinifieldSerializer, RecipeListSerializer
-from .mixins import CreateAndDeleteRelatedMixin
+from .models import Favorite, Ingredient, IngredientInRecipe, Recipe, Tag, ShoppingCart
+from .serializers import IngredientSerializer, TagSerializer, RecipeCreateUpdateSerializer, RecipeMinifieldSerializer, \
+    RecipeListSerializer, ShoppingCartSerializer, FavoriteSerializer
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -35,18 +38,12 @@ class IngredientViewSet(viewsets.ModelViewSet):
         return queryset.all()
 
 
-class RecipesViewSet(viewsets.ModelViewSet, CreateAndDeleteRelatedMixin):
+class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     http_method_names = ['get', 'post', 'put', 'delete']
 
     def get_permissions(self):
-        if self.action in (
-            'shopping_cart',
-            'favorite',
-            'download_shopping_cart'
-        ):
-            return [IsAuthenticated]
-        elif self.action == 'destroy':
+        if self.action == 'destroy':
             return [IsAuthenticatedOrReadOnly]
         else:
             return super().get_permissions()
@@ -57,8 +54,6 @@ class RecipesViewSet(viewsets.ModelViewSet, CreateAndDeleteRelatedMixin):
     def get_serializer_class(self):
         if self.action in ('create', 'update', 'partial_update'):
             return RecipeCreateUpdateSerializer
-        elif self.action in ('shopping_cart', 'favorite'):
-            return RecipeMinifieldSerializer
         else:
             return RecipeListSerializer
 
@@ -72,39 +67,79 @@ class RecipesViewSet(viewsets.ModelViewSet, CreateAndDeleteRelatedMixin):
         if self.request.query_params.get('is_favorited'):
             queryset = queryset.filter(is_favorited=True)
         if self.request.query_params.get('is_in_shopping_cart'):
-            queryset = queryset.filter(in_shopping_cart=True)
+            queryset = queryset.filter(is_in_shopping_cart=True)
         author = self.request.query_params.get('author', None)
         if author:
             queryset = queryset.filter(author=author)
 
         return queryset
 
-    @action(methods=['get', 'delete'], detail=True)
-    def shopping_cart(self, request, pk=None):
-        return self.create_and_delete_related(
-            pk=pk,
-            klass=Favorite,
-            create_fqiled_message="Не удалось добавить рецепт в список покупок",
-            delete_failed_message="Рецепт отсутствует в списке покупок",
-            field_to_create_or_delete_name='recipe'
+
+class FavoriteView(views.APIView):
+    """
+    Вью избранных рецептов.
+    переопределен метод GET, который проверяет наличие рецепта в избранном
+    и в случае его отсутствия там - добавляет
+    """
+    permission_classes = [IsAuthenticated, ]
+
+    def get(self, request, pk=None):
+        user = request.user
+        data = {
+            'user': user.id,
+            'recipe': pk,
+        }
+        context = {'request': request}
+        serializer = FavoriteSerializer(data=data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, pk):
+        user = request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+
+        Favorite.objects.get(user=user, recipe=recipe).delete()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
         )
 
-    @action(methods=['get', 'delete'], detail=True)
-    def favorite(self, request, pk=None):
-        return self.create_and_delete_related(
-            pk=pk,
-            klass=Favorite,
-            create_fqiled_message="Не удалось добавить рецепт в избранное",
-            delete_failed_message="Рецепт отсутствует в избранном",
-            field_to_create_or_delete_name='recipe'
+
+class ShoppingCartView(views.APIView):
+    """
+    Вью добавления в корзину продуктов.
+    переопределен метод GET, который проверяет наличие рецепта в корзине
+    и в случае его отсутствия там - добавляет
+    """
+    permission_classes = [IsAuthenticated, ]
+    def get(self, request, pk=None):
+
+        user = request.user
+        data = {
+            'user': user.id,
+            'recipe': pk,
+        }
+        context = {'request': request}
+        serializer = ShoppingCartSerializer(data=data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, pk):
+        user = request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+
+        ShoppingCart.objects.get(user=user, recipe=recipe).delete()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
         )
 
-    @action(methods=['get'], detail=False)
-    def download_shopping_cart(self, request):
+
+class DownloadShoppingCartView(views.APIView):
+    def get(self, request):
         items = IngredientInRecipe.objects.select_related(
             'recipe', 'ingredient'
         )
-
         if request.user.is_authenticated:
             items = items.filter(
                 recipe__shopping_cart__user=request.user

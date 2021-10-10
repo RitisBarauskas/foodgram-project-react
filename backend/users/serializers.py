@@ -47,19 +47,19 @@ class AuthTokenSerializer(serializers.Serializer):
         trim_whitespace=False
     )
 
-    def validate(self, attrs):
-        email = attrs.get('email')
-        password = attrs.get('password')
+    def validate(self, attributes):
+        email = attributes.get('email')
+        password = attributes.get('password')
 
         if email and password:
             user = authenticate(request=self.context.get('request'),
                                 email=email, password=password)
             if not user:
-                msg = 'Неверные учетные данные.'
-                raise serializers.ValidationError(msg, code='authorization')
+                message = 'Неверные учетные данные.'
+                raise serializers.ValidationError(message, code='authorization')
         else:
-            msg = 'Запрос должен содержать email и пароль.'
-            raise serializers.ValidationError(msg, code='authorization')
+            message = 'Запрос должен содержать email и пароль.'
+            raise serializers.ValidationError(message, code='authorization')
 
-        attrs['user'] = user
-        return attrs
+        attributes['user'] = user
+        return attributes

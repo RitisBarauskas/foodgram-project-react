@@ -5,9 +5,10 @@ from django.core.files.base import ContentFile
 from rest_framework import serializers
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 
 from users.serializers import UserSerializerCustom
-from .models import Favorite, Ingredient, IngredientInRecipe, Recipe, Tag
+from .models import Favorite, Ingredient, IngredientInRecipe, Recipe, Tag, ShoppingCart
 from .constants import DEFAULT_RECIPES_LIMIT
 
 User = get_user_model()
@@ -91,20 +92,44 @@ class UserExtendedSerializer(UserSerializerCustom):
 
 
 class RecipeListSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True)
-    author = UserSerializerCustom()
+    tags = TagSerializer(many=True, read_only=True)
+    author = UserSerializerCustom(read_only=True)
     ingredients = serializers.SerializerMethodField()
-    is_favorited = serializers.BooleanField()
-    is_in_shopping_cart = serializers.BooleanField()
-
-    def get_ingredients(self, obj):
-        return IngredientInRecipeSerializer(
-            IngredientInRecipe.objects.filter(recipe=obj).all(), many=True
-        ).data
+    is_in_shopping_cart = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
-        exclude = ('pub_date',)
+        fields = (
+            'id',
+            'tags',
+            'author',
+            'ingredients',
+            'is_favorited',
+            'is_in_shopping_cart',
+            'name',
+            'image',
+            'text',
+            'cooking_time'
+        )
+
+    def get_ingredients(self, obj):
+        record = IngredientInRecipe.objects.filter(recipe=obj)
+        return IngredientInRecipeSerializer(record, many=True).data
+
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:
+            return False
+        user = request.user
+        return Favorite.objects.filter(recipe=obj, user=user).exists()
+
+    def get_is_in_shopping_cart(self, obj):
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:
+            return False
+        user = request.user
+        return ShoppingCart.objects.filter(recipe=obj, user=user).exists()
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -257,4 +282,69 @@ class AddRecipeSerializer(serializers.ModelSerializer):
     def validate_cooking_time(self, data):
         if data <= 0:
             raise ValidationError('Время готовки должно равняться минуте или быть больше')
+        return data
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
+    class Meta:
+        model = Favorite
+        fields = (
+            'user',
+            'recipe'
+        )
+
+    def validate(self, data):
+        user = self.context.get('request').user
+        recipe_id = data['recipe'].id
+
+        if (self.context.get('request').method == 'GET'
+                and Favorite.objects.filter(user=user,
+                                            recipe__id=recipe_id).exists()):
+            raise serializers.ValidationError(
+                'Рецепт уже добавлен в избранное')
+
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+
+        if (self.context.get('request').method == 'DELETE'
+                and not Favorite.objects.filter(
+                    user=user,
+                    recipe=recipe).exists()):
+            raise serializers.ValidationError()
+
+        return data
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        return RecipeListSerializer(
+            instance.recipe,
+            context=context).data
+
+
+class ShoppingCartSerializer(FavoriteSerializer):
+    class Meta(FavoriteSerializer.Meta):
+        model = ShoppingCart
+
+    def validate(self, data):
+        user = self.context.get('request').user
+        recipe_id = data['recipe'].id
+        if (self.context.get('request').method == 'GET'
+                and ShoppingCart.objects.filter(
+                    user=user,
+                    recipe__id=recipe_id
+                ).exists()):
+            raise serializers.ValidationError(
+                'Продукты уже добавлены в корзину')
+
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+
+        if (self.context.get('request').method == 'DELETE'
+                and not ShoppingCart.objects.filter(
+                    user=user,
+                    recipe=recipe).exists()):
+            raise serializers.ValidationError()
+
         return data
