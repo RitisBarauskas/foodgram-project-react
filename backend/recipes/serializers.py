@@ -55,7 +55,7 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
 
 class RecipeListSerializer(serializers.ModelSerializer):
     """
-        Сериалзиатор отдает список рецептов
+    Сериалзиатор отдает список рецептов
     """
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializerCustom(read_only=True)
@@ -109,7 +109,7 @@ class Base64ImageField(serializers.ImageField):
 
 class IngredientCreateInRecipeSerializer(serializers.ModelSerializer):
     """
-        Сериалзиатор создания рецепт-ингридентов
+    Сериалзиатор создания рецепт-ингридентов
     """
     recipe = serializers.PrimaryKeyRelatedField(read_only=True)
     id = serializers.PrimaryKeyRelatedField(
@@ -135,16 +135,11 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     author = UserSerializerCustom(required=False)
 
-    @transaction.atomic
-    def create(self, validated_data):
-        ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(**validated_data)
-        recipe.tags.set(tags)
-
+    @staticmethod
+    def _create_data(ingredients, obj):
         create_ingredients = [
             IngredientInRecipe(
-                recipe=recipe,
+                recipe=obj,
                 ingredient=ingredient['ingredient'],
                 amount=ingredient['amount'],
             )
@@ -154,6 +149,14 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         IngredientInRecipe.objects.bulk_create(
             create_ingredients
         )
+
+    @transaction.atomic
+    def create(self, validated_data):
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        recipe = Recipe.objects.create(**validated_data)
+        recipe.tags.set(tags)
+        self._create_data(ingredients, recipe)
 
         return recipe
 
@@ -165,19 +168,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             instance.tags.set(tags)
         if ingredients is not None:
             instance.ingredients.clear()
-
-        create_ingredients = [
-            IngredientInRecipe(
-                recipe=instance,
-                ingredient=ingredient['ingredient'],
-                amount=ingredient['amount'],
-            )
-            for ingredient in ingredients
-        ]
-
-        IngredientInRecipe.objects.bulk_create(
-            create_ingredients
-        )
+        self._create_data(ingredients, instance)
 
         return super().update(instance, validated_data)
 
@@ -193,18 +184,6 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         exclude = ('pub_date',)
-
-
-class AddIngredientRecipeSerializer(serializers.ModelSerializer):
-    """
-    Сериалзиатор добавления ингредиента и его количества
-    """
-    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-    amount = serializers.IntegerField()
-
-    class Meta:
-        model = IngredientInRecipe
-        field = ('id', 'amount')
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -251,7 +230,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 class ShoppingCartSerializer(FavoriteSerializer):
     """
-        Сериалзиатор добавления в корзину
+    Сериалзиатор добавления в корзину
     """
     class Meta(FavoriteSerializer.Meta):
         model = ShoppingCart
