@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from users.serializers import UserSerializerCustom
-
 from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
                      ShoppingCart, Tag)
 
@@ -56,11 +55,11 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
 
 class RecipeListSerializer(serializers.ModelSerializer):
     """
-    Сериалзиатор отдает список рецептов
+        Сериалзиатор отдает список рецептов
     """
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializerCustom(read_only=True)
-    ingredients = IngredientInRecipeSerializer(many=True).data
+    ingredients = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
 
@@ -78,6 +77,10 @@ class RecipeListSerializer(serializers.ModelSerializer):
             'text',
             'cooking_time',
         )
+
+    def get_ingredients(self, obj):
+        record = IngredientInRecipe.objects.filter(recipe=obj)
+        return IngredientInRecipeSerializer(record, many=True).data
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
@@ -106,7 +109,7 @@ class Base64ImageField(serializers.ImageField):
 
 class IngredientCreateInRecipeSerializer(serializers.ModelSerializer):
     """
-    Сериалзиатор создания рецепт-ингридентов
+        Сериалзиатор создания рецепт-ингридентов
     """
     recipe = serializers.PrimaryKeyRelatedField(read_only=True)
     id = serializers.PrimaryKeyRelatedField(
@@ -178,8 +181,18 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
 
         return super().update(instance, validated_data)
 
+    def to_representation(self, instance):
+        self.fields.pop('ingredients')
+        self.fields['tags'] = TagSerializer(many=True)
+        representation = super().to_representation(instance)
+        representation['ingredients'] = IngredientInRecipeSerializer(
+            IngredientInRecipe.objects.filter(recipe=instance).all(), many=True
+        ).data
+        return representation
+
     class Meta:
         model = Recipe
+        exclude = ('pub_date',)
 
 
 class AddIngredientRecipeSerializer(serializers.ModelSerializer):
