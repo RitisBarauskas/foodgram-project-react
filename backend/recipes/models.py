@@ -140,11 +140,6 @@ class Recipe(models.Model):
 
     objects = RecipeQuerySet.as_manager()
 
-    def save(self, *args, **kwargs):
-        if not kwargs.pop('from_admin', False):
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
@@ -152,6 +147,11 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not kwargs.pop('from_admin', False):
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
 
 class IngredientInRecipe(models.Model):
