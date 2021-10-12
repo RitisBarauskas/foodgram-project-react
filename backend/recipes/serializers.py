@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from users.serializers import UserSerializerCustom
+
 from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
                      ShoppingCart, Tag)
 
@@ -112,7 +113,6 @@ class RecipeListSerializer(serializers.ModelSerializer):
             return False
         user = request.user
         return ShoppingCart.objects.filter(recipe=obj, user=user).exists()
-
 
 
 class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
