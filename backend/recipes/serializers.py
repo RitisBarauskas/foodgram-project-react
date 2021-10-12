@@ -33,24 +33,45 @@ class TagSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class Base64ImageField(serializers.ImageField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
+            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+
+        return super().to_internal_value(data)
+
+
 class IngredientInRecipeSerializer(serializers.ModelSerializer):
     """
     Сериализатор ингердиентов в рецепте
     """
-    name = serializers.StringRelatedField(
-        source='ingredient.name'
-    )
-    measurement_unit = serializers.StringRelatedField(
+    id = serializers.ReadOnlyField(source='ingredient.id')
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit'
     )
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'measurement_unit')
+
+
+class IngredientCreateInRecipeSerializer(serializers.ModelSerializer):
+    """
+    Сериалзиатор создания рецепт-ингридентов
+    """
+    recipe = serializers.PrimaryKeyRelatedField(read_only=True)
     id = serializers.PrimaryKeyRelatedField(
         source='ingredient',
         queryset=Ingredient.objects.all()
     )
+    amount = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = IngredientInRecipe
-        fields = ('id', 'name', 'amount', 'measurement_unit')
+        fields = ('recipe', 'id', 'amount')
 
 
 class RecipeListSerializer(serializers.ModelSerializer):
@@ -59,7 +80,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
     """
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializerCustom(read_only=True)
-    ingredients = serializers.SerializerMethodField()
+    ingredients = IngredientInRecipeSerializer(many=True)
     is_in_shopping_cart = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
 
@@ -78,10 +99,6 @@ class RecipeListSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
 
-    def get_ingredients(self, obj):
-        record = IngredientInRecipe.objects.filter(recipe=obj)
-        return IngredientInRecipeSerializer(record, many=True).data
-
     def get_is_favorited(self, obj):
         request = self.context.get('request')
         if not request or request.user.is_anonymous:
@@ -96,31 +113,6 @@ class RecipeListSerializer(serializers.ModelSerializer):
         user = request.user
         return ShoppingCart.objects.filter(recipe=obj, user=user).exists()
 
-
-class Base64ImageField(serializers.ImageField):
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-
-        return super().to_internal_value(data)
-
-
-class IngredientCreateInRecipeSerializer(serializers.ModelSerializer):
-    """
-    Сериалзиатор создания рецепт-ингридентов
-    """
-    recipe = serializers.PrimaryKeyRelatedField(read_only=True)
-    id = serializers.PrimaryKeyRelatedField(
-        source='ingredient',
-        queryset=Ingredient.objects.all()
-    )
-    amount = serializers.IntegerField(write_only=True)
-
-    class Meta:
-        model = IngredientInRecipe
-        fields = ('recipe', 'id', 'amount')
 
 
 class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
@@ -246,12 +238,10 @@ class ShoppingCartSerializer(FavoriteSerializer):
             raise serializers.ValidationError(
                 'Продукты уже добавлены в корзину')
 
-        recipe = get_object_or_404(Recipe, id=recipe_id)
-
         if (self.context.get('request').method == 'DELETE'
                 and not ShoppingCart.objects.filter(
                     user=user,
-                    recipe=recipe).exists()):
+                    recipe=data['recipe']).exists()):
             raise serializers.ValidationError()
 
         return data

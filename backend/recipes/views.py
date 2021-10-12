@@ -1,16 +1,23 @@
 from django.db.models import F, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django_filters import rest_framework as my_filters
 from rest_framework import status, views, viewsets
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 
 from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
                      ShoppingCart, Tag)
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           RecipeCreateUpdateSerializer, RecipeListSerializer,
                           ShoppingCartSerializer, TagSerializer)
+from .filters import IngredientFilter, RecipeFilter
+
+
+class LimitFieldPagination(PageNumberPagination):
+    page_size_query_param = 'limit'
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -30,25 +37,21 @@ class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
-    http_method_names = ['get']
-
-    def get_queryset(self):
-        queryset = Ingredient.objects
-        name = self.request.query_params.get('name')
-        if name:
-            queryset = queryset.filter(name__istartswith=name)
-        return queryset.all()
+    filter_backends = (my_filters.DjangoFilterBackend,)
+    filterset_class = IngredientFilter
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     http_method_names = ['get', 'post', 'put', 'delete']
+    filter_backends = (my_filters.DjangoFilterBackend,)
+    filterset_class = RecipeFilter
+    pagination_class = LimitFieldPagination
 
     def get_permissions(self):
         if self.action == 'destroy':
             return [IsAuthenticatedOrReadOnly]
-        else:
-            return super().get_permissions()
+        return super().get_permissions()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -56,8 +59,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ('create', 'update', 'partial_update'):
             return RecipeCreateUpdateSerializer
-        else:
-            return RecipeListSerializer
+        return RecipeListSerializer
 
     def get_queryset(self):
         tags = self.request.query_params.getlist('tags')
