@@ -78,7 +78,8 @@ class FavoriteView(views.APIView):
         }
         context = {'request': request}
         serializer = FavoriteSerializer(data=data, context=context)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
         return Response(
             serializer.data,
@@ -88,8 +89,7 @@ class FavoriteView(views.APIView):
     def delete(self, request, pk):
         user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
-
-        Favorite.objects.get(user=user, recipe=recipe).delete()
+        Favorite.objects.filter(user=user, recipe=recipe).delete()
         return Response(
             status=status.HTTP_204_NO_CONTENT
         )
@@ -112,7 +112,8 @@ class ShoppingCartView(views.APIView):
         }
         context = {'request': request}
         serializer = ShoppingCartSerializer(data=data, context=context)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
         return Response(
             serializer.data,
@@ -122,8 +123,7 @@ class ShoppingCartView(views.APIView):
     def delete(self, request, pk):
         user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
-
-        ShoppingCart.objects.get(user=user, recipe=recipe).delete()
+        ShoppingCart.objects.filter(user=user, recipe=recipe).delete()
         return Response(
             status=status.HTTP_204_NO_CONTENT
         )
