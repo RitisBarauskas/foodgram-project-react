@@ -79,7 +79,10 @@ class FavoriteView(views.APIView):
         context = {'request': request}
         serializer = FavoriteSerializer(data=data, context=context)
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
         serializer.save()
         return Response(
             serializer.data,
@@ -113,7 +116,10 @@ class ShoppingCartView(views.APIView):
         context = {'request': request}
         serializer = ShoppingCartSerializer(data=data, context=context)
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
         serializer.save()
         return Response(
             serializer.data,
