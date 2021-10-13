@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.db import transaction
 from rest_framework import serializers
-from rest_framework.serializers import ValidationError
 
 from users.serializers import UserSerializerCustom
 
@@ -199,7 +198,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
             serializers.UniqueTogetherValidator(
                 queryset=model.objects.all(),
                 fields=('recipe', 'user'),
-                message='Рецепт уже добавлен в избранное'
+                message='Рецепт уже добавлен в избранное',
             )
         ]
 
@@ -210,22 +209,11 @@ class ShoppingCartSerializer(FavoriteSerializer):
     """
     class Meta(FavoriteSerializer.Meta):
         model = ShoppingCart
-
-    def validate(self, data):
-        user = self.context.get('request').user
-        recipe_id = data['recipe'].id
-        if (self.context.get('request').method == 'GET'
-                and ShoppingCart.objects.filter(
-                    user=user,
-                    recipe__id=recipe_id
-        ).exists()):
-            raise serializers.ValidationError(
-                'Продукты уже добавлены в корзину')
-
-        if (self.context.get('request').method == 'DELETE'
-                and not ShoppingCart.objects.filter(
-                    user=user,
-                    recipe=data['recipe']).exists()):
-            raise serializers.ValidationError()
-
-        return data
+        fields = '__all__'
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=model.objects.all(),
+                fields=('recipe', 'user'),
+                message='Рецепт уже находится в списке покупок',
+            )
+        ]
