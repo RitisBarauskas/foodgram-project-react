@@ -8,8 +8,8 @@ router.register("", FollowUserViewSet)
 
 urlpatterns = [
     path('users/subscriptions/', subscriptions, name='subscriptions'),
-    path('auth/token/login/', CustomAuthToken.as_view()),
-    path('auth/token/logout/', Logout.as_view()),
+    path('auth/token/login/', CustomAuthToken.as_view(), 'login'),
+    path('auth/token/logout/', Logout.as_view(), 'logout'),
     path('users/', include(router.urls)),
     path('', include('djoser.urls')),
 ]

@@ -10,8 +10,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Follow
-from .serializers import (AuthTokenSerializer, FollowUsersSerializer,
-                          SubscribersSerializer, UserSerializerCustom)
+from .serializers import (AuthTokenSerializer, SubscribersSerializer,
+                          UserSerializerCustom)
 
 User = get_user_model()
 
@@ -51,7 +51,7 @@ class FollowUserViewSet(UserViewSet):
             author=following_user
         )
 
-        return Response(FollowUsersSerializer(follow[0]).data)
+        return Response(SubscribersSerializer(follow[0]).data)
 
     def user_unsubscribe(self, serializer, id=None):
         following_user = get_object_or_404(User, id=id)

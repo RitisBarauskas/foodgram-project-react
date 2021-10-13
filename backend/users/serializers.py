@@ -78,82 +78,48 @@ class AuthTokenSerializer(serializers.Serializer):
         return attributes
 
 
-class RecipeCountFollowUserField(serializers.Field):
-    """
-    Мини-сериализатор подсчета числа подписчиков
-    """
-    def get_attribute(self, instance):
-        return Recipe.objects.filter(author=instance.author)
-
-    def to_representation(self, recipe_list):
-        return recipe_list.count()
-
-
-class RecipeFollowUserField(serializers.Field):
-    """
-    Сериалзиатор формирования рецептов для подписчиков
-    """
-    def get_attribute(self, instance):
-        return Recipe.objects.filter(author=instance.author)
-
-    def to_representation(self, recipe_list):
-        recipe_data = []
-        for recipe in recipe_list:
-            recipe_data.append(
-                {
-                    "id": recipe.id,
-                    "name": recipe.name,
-                    "image": recipe.image.url,
-                    "cooking_time": recipe.cooking_time,
-                }
-            )
-        return recipe_data
-
-
-class FollowUsersSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор подписок (можно подписаться и отписаться)
-    """
-    email = serializers.ReadOnlyField(source='following.email')
-    id = serializers.ReadOnlyField(source='following.id')
-    username = serializers.ReadOnlyField(source='following.username')
-    first_name = serializers.ReadOnlyField(source='following.first_name')
-    last_name = serializers.ReadOnlyField(source='following.last_name')
-    is_subscribed = serializers.ReadOnlyField(default=True)
-    recipes = RecipeFollowUserField()
-    recipes_count = RecipeCountFollowUserField()
-
-    class Meta:
-        model = Follow
-        read_only_fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'recipes',
-            'recipes_count',
-        )
-        fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'recipes',
-            'recipes_count',
-        )
-
-
 class RecipeShortSerializer(serializers.ModelSerializer):
     """
     Мини-сериализатор рецептов
     """
     class Meta:
         model = Recipe
-        fields = ['id', 'name', 'image', 'cooking_time']
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
+# class FollowUsersSerializer(serializers.ModelSerializer):
+#     """
+#     Сериализатор подписок (можно подписаться и отписаться)
+#     """
+#     id = serializers.ReadOnlyField(source='author.id')
+#     email = serializers.ReadOnlyField(source='author.email')
+#     username = serializers.ReadOnlyField(source='author.username')
+#     first_name = serializers.ReadOnlyField(source='author.first_name')
+#     last_name = serializers.ReadOnlyField(source='author.last_name')
+#     is_subscribed = serializers.SerializerMethodField()
+#     recipes = RecipeShortSerializer(many=True, read_only=True)
+#     recipes_count = serializers.SerializerMethodField()
+#
+#     def get_recipes_count(self, obj):
+#         return Recipe.objects.filter(author=obj.author).count()
+#
+#     def get_is_subscribed(self, obj):
+#         return Follow.objects.filter(
+#             user=obj.user, author=obj.author
+#         ).exists()
+#
+#     class Meta:
+#         model = Follow
+#         fields = (
+#             'email',
+#             'id',
+#             'username',
+#             'first_name',
+#             'last_name',
+#             'is_subscribed',
+#             'recipes',
+#             'recipes_count',
+#         )
 
 
 class SubscribersSerializer(serializers.ModelSerializer):

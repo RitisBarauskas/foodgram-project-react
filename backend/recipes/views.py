@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as my_filters
 from rest_framework import status, views, viewsets
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (IsAuthenticated,
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
@@ -28,6 +28,7 @@ class TagViewSet(viewsets.ModelViewSet):
     serializer_class = TagSerializer
     pagination_class = None
     http_method_names = ['get']
+    permission_classes = [AllowAny]
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
