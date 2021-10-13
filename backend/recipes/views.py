@@ -61,23 +61,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
             return RecipeCreateUpdateSerializer
         return RecipeListSerializer
 
-    def get_queryset(self):
-        tags = self.request.query_params.getlist('tags')
-        user = self.request.user
-        queryset = Recipe.objects
-        if tags:
-            queryset = queryset.filter_by_tags(tags)
-        queryset = queryset.add_user_annotation(user.pk)
-        if self.request.query_params.get('is_favorited'):
-            queryset = queryset.filter(is_favorited=True)
-        if self.request.query_params.get('is_in_shopping_cart'):
-            queryset = queryset.filter(is_in_shopping_cart=True)
-        author = self.request.query_params.get('author', None)
-        if author:
-            queryset = queryset.filter(author=author)
-
-        return queryset
-
 
 class FavoriteView(views.APIView):
     """
