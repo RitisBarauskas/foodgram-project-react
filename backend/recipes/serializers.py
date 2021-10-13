@@ -3,7 +3,7 @@ import base64
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.shortcuts import get_object_or_404
+from rest_framework.serializers import ValidationError
 from rest_framework import serializers
 
 from users.serializers import UserSerializerCustom
@@ -115,7 +115,10 @@ class RecipeListSerializer(serializers.ModelSerializer):
         if not request or request.user.is_anonymous:
             return False
         user = request.user
-        return ShoppingCart.objects.filter(recipe=obj, user=user).exists()
+        return ShoppingCart.objects.filter(
+            recipe=obj,
+            user=user
+        ).exists()
 
 
 class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
@@ -168,13 +171,10 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
-        self.fields.pop('ingredients')
-        self.fields['tags'] = TagSerializer(many=True)
-        representation = super().to_representation(instance)
-        representation['ingredients'] = IngredientInRecipeSerializer(
-            IngredientInRecipe.objects.filter(recipe=instance).all(), many=True
+        return RecipeListSerializer(
+            instance,
+            context={'request': self.context.get('request')},
         ).data
-        return representation
 
     class Meta:
         model = Recipe
@@ -185,34 +185,25 @@ class FavoriteSerializer(serializers.ModelSerializer):
     """
     Сериалзиатор добавления в избранное
     """
-    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    recipe = serializers.PrimaryKeyRelatedField(
+        queryset=Recipe.objects.all()
+    )
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all()
+    )
 
     class Meta:
         model = Favorite
-        fields = (
-            'user',
-            'recipe'
-        )
+        fields = ('user', 'recipe')
 
     def validate(self, data):
-        user = self.context.get('request').user
+        user = data['user']
         recipe_id = data['recipe'].id
-
-        if (self.context.get('request').method == 'GET'
-                and Favorite.objects.filter(user=user,
-                                            recipe__id=recipe_id).exists()):
-            raise serializers.ValidationError(
-                'Рецепт уже добавлен в избранное')
-
-        recipe = get_object_or_404(Recipe, id=recipe_id)
-
-        if (self.context.get('request').method == 'DELETE'
-                and not Favorite.objects.filter(
-                    user=user,
-                    recipe=recipe).exists()):
-            raise serializers.ValidationError()
-
+        if Favorite.objects.filter(
+                user=user,
+                recipe__id=recipe_id
+        ).exists():
+            raise ValidationError('Рецепт уже добавлен в избранное!')
         return data
 
     def to_representation(self, instance):
