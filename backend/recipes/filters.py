@@ -1,6 +1,6 @@
 from django_filters import rest_framework as my_filters
 
-from .models import Ingredient, Recipe, Tag
+from .models import Ingredient, Recipe
 
 
 class IngredientFilter(my_filters.FilterSet):
@@ -20,6 +20,9 @@ class IngredientFilter(my_filters.FilterSet):
 
 
 class RecipeFilter(my_filters.FilterSet):
+    """
+    Фильтр рецептов
+    """
     tags = my_filters.AllValuesMultipleFilter(field_name='tags__slug')
     is_favorited = my_filters.BooleanFilter(
         method='get_is_favorited',
