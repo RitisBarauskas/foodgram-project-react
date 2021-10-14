@@ -1,17 +1,17 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from djoser.views import UserViewSet
-from rest_framework import permissions, status
+from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Follow
-from .serializers import (AuthTokenSerializer, SubscribersSerializer,
-                          UserSerializerCustom)
+from .serializers import (AddFollowSerializer, AuthTokenSerializer,
+                          SubscribersSerializer)
 
 User = get_user_model()
 
@@ -36,46 +36,39 @@ class Logout(APIView):
         )
 
 
-class FollowUserViewSet(UserViewSet):
+class FollowUserView(APIView):
+    """
+    Вью создания и удаления подписок.
+    """
+    permission_classes = [IsAuthenticated, ]
 
-    serializer_class = UserSerializerCustom
-
-    def user_subscribe(self, serializer, id=None):
-        following_user = get_object_or_404(User, id=id)
-
-        if self.request.user == following_user:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-        follow = Follow.objects.get_or_create(
-            user=self.request.user,
-            author=following_user
+    def get(self, request, pk=None):
+        user = request.user
+        data = {
+            'user': user.id,
+            'author': pk,
+        }
+        context = {'request': request}
+        serializer = AddFollowSerializer(data=data, context=context)
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        serializer.save()
+        serializer = SubscribersSerializer(user)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED
         )
 
-        return Response(SubscribersSerializer(follow[0]).data)
-
-    def user_unsubscribe(self, serializer, id=None):
-        following_user = get_object_or_404(User, id=id)
-
-        deleted_subscriptions = Follow.objects.filter(
-            user=self.request.user,
-            author=following_user
-        ).delete()
-
-        if deleted_subscriptions[0] > 0:
-            return Response(status=status.HTTP_204_NO_CONTENT)
-
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    @action(
-        detail=True,
-        methods=['get', 'delete'],
-        permission_classes=[permissions.IsAuthenticated]
-    )
-    def subscribe(self, serializer, id=None):
-        if self.request.method == 'DELETE':
-            return self.user_unsubscribe(serializer, id)
-        else:
-            return self.user_subscribe(serializer, id)
+    def delete(self, request, pk):
+        user = request.user
+        author = get_object_or_404(User, pk=pk)
+        Follow.objects.filter(user=user, author=author).delete()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 @api_view(['get'])

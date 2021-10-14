@@ -6,7 +6,6 @@ from django.db import transaction
 from rest_framework import serializers
 
 from users.serializers import UserSerializerCustom
-
 from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
                      ShoppingCart, Tag)
 

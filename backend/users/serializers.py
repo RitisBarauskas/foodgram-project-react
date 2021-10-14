@@ -3,7 +3,6 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 
 from recipes.models import Recipe
-
 from .models import Follow
 
 User = get_user_model()
@@ -87,44 +86,26 @@ class RecipeShortSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-# class FollowUsersSerializer(serializers.ModelSerializer):
-#     """
-#     Сериализатор подписок (можно подписаться и отписаться)
-#     """
-#     id = serializers.ReadOnlyField(source='author.id')
-#     email = serializers.ReadOnlyField(source='author.email')
-#     username = serializers.ReadOnlyField(source='author.username')
-#     first_name = serializers.ReadOnlyField(source='author.first_name')
-#     last_name = serializers.ReadOnlyField(source='author.last_name')
-#     is_subscribed = serializers.SerializerMethodField()
-#     recipes = RecipeShortSerializer(many=True, read_only=True)
-#     recipes_count = serializers.SerializerMethodField()
-#
-#     def get_recipes_count(self, obj):
-#         return Recipe.objects.filter(author=obj.author).count()
-#
-#     def get_is_subscribed(self, obj):
-#         return Follow.objects.filter(
-#             user=obj.user, author=obj.author
-#         ).exists()
-#
-#     class Meta:
-#         model = Follow
-#         fields = (
-#             'email',
-#             'id',
-#             'username',
-#             'first_name',
-#             'last_name',
-#             'is_subscribed',
-#             'recipes',
-#             'recipes_count',
-#         )
+class AddFollowSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор подписки на пользователя
+    """
+
+    class Meta:
+        model = Follow
+        fields = '__all__'
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=model.objects.all(),
+                fields=('author', 'user'),
+                message='Вы уже подписаны на автора',
+            )
+        ]
 
 
 class SubscribersSerializer(serializers.ModelSerializer):
     """
-    Сериализатор листа подписчиков
+    Сериализатор листа подписчиков и удаления подписки
     """
     recipes = RecipeShortSerializer(many=True, read_only=True)
     recipes_count = serializers.SerializerMethodField()
