@@ -9,7 +9,7 @@ urlpatterns = [
         name='subscribe',
     ),
     path('users/subscriptions/', subscriptions, name='subscriptions'),
-    path('auth/token/login/', CustomAuthToken.as_view(), 'login'),
-    path('auth/token/logout/', Logout.as_view(), 'logout'),
+    path('auth/token/login/', CustomAuthToken.as_view(), name='login'),
+    path('auth/token/logout/', Logout.as_view(), name='logout'),
     path('', include('djoser.urls')),
 ]

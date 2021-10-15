@@ -50,7 +50,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
     pagination_class = LimitFieldPagination
 
     def get_permissions(self):
-        if self.action == 'destroy':
+        if self.action in ('create', 'update', 'partial_update'):
+            return [IsAuthenticated]
+        elif self.action == 'destroy':
             return [IsAuthenticatedOrReadOnly]
         return super().get_permissions()
 
