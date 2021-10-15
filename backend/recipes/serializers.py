@@ -73,6 +73,22 @@ class IngredientCreateInRecipeSerializer(serializers.ModelSerializer):
         fields = ('recipe', 'id', 'amount')
 
 
+class RecipeMiniSerializer(serializers.ModelSerializer):
+    """
+    Мини-сериалайзер рецептов
+    """
+    tags = TagSerializer(many=True, read_only=True)
+    author = UserSerializerCustom(read_only=True)
+    ingredients = IngredientInRecipeSerializer(
+        source='ingredient_amount',
+        many=True
+    )
+
+    class Meta:
+        model = Recipe
+        fields = '__all__'
+
+
 class RecipeListSerializer(serializers.ModelSerializer):
     """
     Сериалзиатор отдает список рецептов
@@ -152,7 +168,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
-        return RecipeListSerializer(
+        return RecipeMiniSerializer(
             instance,
             context={'request': self.context.get('request')},
         ).data

@@ -4,13 +4,13 @@ from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as my_filters
 from rest_framework import status, views, viewsets
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import (AllowAny, IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import IngredientFilter, RecipeFilter
 from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
                      ShoppingCart, Tag)
+from .permissions import OwnerOrAdminOrReadOnly
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           RecipeCreateUpdateSerializer, RecipeListSerializer,
                           ShoppingCartSerializer, TagSerializer)
@@ -44,13 +44,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     filter_backends = (my_filters.DjangoFilterBackend,)
     filterset_class = RecipeFilter
     pagination_class = PageNumberPagination
-
-    def get_permissions(self):
-        if self.action in ('create', 'update', 'partial_update'):
-            return [IsAuthenticated]
-        elif self.action == 'destroy':
-            return [IsAuthenticatedOrReadOnly]
-        return super().get_permissions()
+    permission_classes = (OwnerOrAdminOrReadOnly,)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
