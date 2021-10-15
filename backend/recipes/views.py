@@ -16,10 +16,6 @@ from .serializers import (FavoriteSerializer, IngredientSerializer,
                           ShoppingCartSerializer, TagSerializer)
 
 
-class LimitFieldPagination(PageNumberPagination):
-    page_size_query_param = 'limit'
-
-
 class TagViewSet(viewsets.ModelViewSet):
     """
     Вьюсет тегов
@@ -47,7 +43,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'put', 'delete']
     filter_backends = (my_filters.DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    pagination_class = LimitFieldPagination
+    pagination_class = PageNumberPagination
 
     def get_permissions(self):
         if self.action in ('create', 'update', 'partial_update'):

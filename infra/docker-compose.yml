@@ -22,8 +22,6 @@ services:
       - media_value:/code/dj_media/
     env_file:
       - ../backend/foodgram_project/.env
-    ports:
-      - 8000:8000
 
   frontend:
     image: ritisbarauskas/foodgram-frontend:v1.1
