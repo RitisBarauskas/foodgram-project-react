@@ -64,6 +64,17 @@ class RecipesViewSet(viewsets.ModelViewSet):
             return RecipeCreateUpdateSerializer
         return RecipeListSerializer
 
+    def get_queryset(self):
+        queryset = Recipe.objects
+        user = self.request.user
+        queryset = queryset.add_user_annotation(user.pk)
+        if self.request.query_params.get('is_favorited'):
+            queryset = queryset.filter(is_favorited=True)
+        if self.request.query_params.get('is_in_shopping_cart'):
+            queryset = queryset.filter(is_in_shopping_cart=True)
+
+        return queryset
+
 
 class FavoriteView(views.APIView):
     """

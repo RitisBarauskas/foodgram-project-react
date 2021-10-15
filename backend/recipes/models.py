@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
@@ -66,11 +66,6 @@ class Tag(models.Model):
 
 
 class RecipeQuerySet(models.QuerySet):
-    def filter_by_tags(self, tags: List[str]):
-        if tags:
-            return self.filter(tags__slug__in=tags).distinct()
-        return self
-
     def add_user_annotation(self, user_id: Optional[int]):
         return self.annotate(
             is_favorited=Exists(
