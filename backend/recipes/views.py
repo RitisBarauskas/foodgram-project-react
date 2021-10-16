@@ -40,7 +40,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
 
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    http_method_names = ['get', 'post', 'put', 'delete']
+    http_method_names = ['get', 'post', 'put', 'delete', 'patch']
     filter_backends = (my_filters.DjangoFilterBackend,)
     filterset_class = RecipeFilter
     pagination_class = PageNumberPagination

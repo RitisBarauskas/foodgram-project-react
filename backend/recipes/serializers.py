@@ -3,7 +3,7 @@ import base64
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.db import transaction
-from rest_framework import serializers
+from rest_framework import serializers, status
 
 from users.serializers import UserSerializerCustom
 from .models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
@@ -129,6 +129,29 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     )
     image = Base64ImageField()
     author = UserSerializerCustom(required=False)
+
+    def validate_ingredients(self, data):
+        ingredients = self.initial_data.get('ingredients')
+        if not ingredients:
+            raise serializers.ValidationError(
+                {'ingredients': 'Вы забыли про ингредиенты'},
+                status.HTTP_400_BAD_REQUEST,
+            )
+        valid_list = []
+        for ingredient in ingredients:
+            if ingredient in valid_list:
+                raise serializers.ValidationError(
+                    {'ingredients': 'Ингредиенты должны быть уникальными'},
+                    status.HTTP_400_BAD_REQUEST,
+                )
+            valid_list.append(ingredient)
+            if int(ingredient['amount']) < 1:
+                raise serializers.ValidationError(
+                    {'ingredients':
+                         'Количество ингердиента должно быть 1 или больше'},
+                    status.HTTP_400_BAD_REQUEST,
+                )
+        return data
 
     @staticmethod
     def _create_data(ingredients, obj):

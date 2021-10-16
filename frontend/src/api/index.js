@@ -185,7 +185,7 @@ class Api {
     return fetch(
       `/api/recipes/${recipe_id}/`,
       {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           ...this._headers,
           'authorization': `Token ${token}`
